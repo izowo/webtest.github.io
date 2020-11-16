@@ -86,7 +86,6 @@ var Graph = function(arg) {
 
 
 function Add(){
- document.fm.C.value = parseInt(document.fm.A.value) + parseInt(document.fm.B.value);
 
  ctx.clearRect(0, 0, csWidth, csHeight);
 
