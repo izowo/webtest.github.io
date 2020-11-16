@@ -12,7 +12,7 @@ var cs       = document.getElementById('myCanvas'),
 ctx.strokeStyle = '#000';
 ctx.lineWidth   = 3;
 ctx.lineJoin    = 'round';
-
+ctx.strokeStyle = "#ff0000";
 
 var Graph = function(arg) {
   this.initialize(arg);
@@ -86,6 +86,9 @@ var Graph = function(arg) {
 
 
 function Add(){
+var color = document.fm.col.value;
+ctx.strokeStyle = color;
+
 
 if(document.fm.riyu.checked){
  ctx.clearRect(0, 0, csWidth, csHeight);
