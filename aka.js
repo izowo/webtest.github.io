@@ -91,9 +91,9 @@ function Add(){
  ctx.clearRect(0, 0, csWidth, csHeight);
 
 
-var pol=parseInt(document.fm.A.value)
+var pol=Number(document.fm.A.value)
 var r=csWidth-10
-var step=parseInt(document.fm.B.value)
+var step=Number(document.fm.B.value)
 var graphData = [];
 
 for (i = 0; i < pol; i++) {
