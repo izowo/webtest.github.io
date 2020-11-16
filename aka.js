@@ -87,8 +87,9 @@ var Graph = function(arg) {
 
 function Add(){
 
+if(document.fm.riyu.checked){
  ctx.clearRect(0, 0, csWidth, csHeight);
-
+}
 
 var pol=Number(document.fm.A.value)
 var r=csWidth-10
