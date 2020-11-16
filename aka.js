@@ -86,8 +86,7 @@ var Graph = function(arg) {
 
 
 function Add(){
-var color = document.fm.col.value;
-ctx.strokeStyle = color;
+ctx.strokeStyle = document.fm.col.value;
 
 
 if(document.fm.riyu.checked){
