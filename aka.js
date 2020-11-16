@@ -94,6 +94,7 @@ var pol=Number(document.fm.A.value)
 var r=csWidth-10
 var step=Number(document.fm.B.value)
 var graphData = [];
+document.fm.C.value = 180*pol-360*step
 
 for (i = 0; i < pol; i++) {
 	P = r/2
