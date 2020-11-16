@@ -1,5 +1,19 @@
-<body>
-<canvas id="myCanvas" width="800" height="800"></canvas>
+<SCRIPT language="JavaScript">
+function Add(){
+ document.fm.C.value = document.fm.A.value + document.fm.B.value;
+}
+</SCRIPT>
 
-<script src="縦線・横線.js"></script>
+<body>
+<FORM name="fm">
+  <INPUT size="20" type="text" name="A">+
+  <INPUT size="20" type="text" name="B">
+  <INPUT type="button" value="=" onclick="Add()">
+  <INPUT size="20" type="text" name="C">
+</FORM>
+
+<canvas id="myCanvas" width="800" height="800"></canvas>
+<link rel=“stylesheet” href=“aka.css”>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="aka.js"></script>
 </body>
