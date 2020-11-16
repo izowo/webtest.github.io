@@ -86,34 +86,27 @@ var Graph = function(arg) {
 
 
 function Add(){
- document.fm.C.value = document.fm.A.value + document.fm.B.value;
+ document.fm.C.value = parseInt(document.fm.A.value) + parseInt(document.fm.B.value);
+
+ ctx.clearRect(0, 0, csWidth, csHeight);
 
 
+var pol=parseInt(document.fm.A.value)
+var r=csWidth-10
+var step=parseInt(document.fm.B.value)
+var graphData = [];
 
-var graphData = [
+for (i = 0; i < pol; i++) {
+	P = r/2
+	Q = r/2 - r/2
+
+graphData.push(
   {
-    beginPos: { x: csWidth/2, y: 0},
-    endPos:   { x: csWidth, y: csWidth/2}
-  },
-  {
-    beginPos: { x: csWidth, y: csWidth/2},
-    endPos:   { x: csWidth/2, y: csWidth}
-  },
-  {
-    beginPos: { x: csWidth/2, y: csWidth},
-    endPos:   { x: 0, y: csWidth/2}
-  },
-];
+    beginPos: { x: (P-r/2)*(Math.cos(2*i*step*Math.PI/pol)) - (Q-r/2)*(Math.sin(2*i*step*Math.PI/pol))+r/2, y: (P-r/2)*(Math.sin(2*i*step*Math.PI/pol)) + (Q-r/2)*(Math.cos(2*i*step*Math.PI/pol))+r/2},
+    endPos:   { x: (P-r/2)*(Math.cos(2*(i+1)*step*Math.PI/pol)) - (Q-r/2)*(Math.sin(2*(i+1)*step*Math.PI/pol))+r/2, y: (P-r/2)*(Math.sin(2*(i+1)*step*Math.PI/pol)) + (Q-r/2)*(Math.cos(2*(i+1)*step*Math.PI/pol))+r/2}
+  });
 
-
-
-
-
-
-
-
-
-
+ };
 
 
 
