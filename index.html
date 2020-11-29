@@ -1,20 +1,293 @@
-<head><title>星型正Ｎ/Ｍ角形描画テスト</title></head>
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Spirograph effect in HTML canvas</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type='text/javascript' src='https://unpkg.com/d3'></script>
+  <script type='text/javascript' src='https://unpkg.com/d3-selection-multi'></script>
+  <style>
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #canvasHolder, input{
+      position: relative;
+    }
+
+    #circle{
+      position: relative;
+      background: black;
+    }
+
+    #spiro{
+      position: absolute;
+      left: 0;
+    }
+
+    #image{
+      position: absolute;
+      display: none;
+    }
+
+    #sliders div{
+      display: inline-block;
+      padding: 10px 5px 5px 0px;
+    }
+
+    button{
+      margin: 10px 5px 0 0;
+      padding: 5px;
+      border-radius: 3px;
+    }
+
+    #draw{
+      background: #419BF9;
+      color: white;
+    }
+
+    #draw[disabled]{
+      background: #97c8fc;
+      color: white;
+    }
+
+    input[type=checkbox], button{
+      cursor: pointer;
+    }
+
+    input[type=range]{
+      cursor: ew-resize;
+    }
+
+    input[type=checkbox][disabled], button[disabled], input[type=range][disabled]{
+      cursor: not-allowed;
+    }
+
+    #note{
+      opacity: 0.6;
+      font: 400 11px system-ui;
+    }
+  </style>
+</head>
 <body>
-<h1>星型正Ｎ/Ｍ角形描画テスト</h1>
+  <div id=canvasHolder>
+    <canvas id=circle></canvas>
+    <canvas id=spiro></canvas>
+    <canvas id=image></canvas>
+  </div>
+  Show circles <input type=checkbox id=showCircles checked>
+  <div id=sliders>
+    <div>
+      <span>Set outer circle size</span><br>
+      <input type=range min=50 max=190 value=150 id=bigCircle>
+    </div>
+    <div>
+      <span>Set inner circle size</span><br>
+      <input type=range min=-100 max=100 value=52 id=smallCircle>
+    </div>
+    <div>
+      <span>Set pen position</span><br>
+      <input type=range min=0 max=1 value=0.6 step=any id=p>
+    </div>
+    <div>
+      <span>Set duration of one circuit</span><br>
+      <input type=range min=1000 max=5000 value=2000 id=loopTime>
+    </div>
+  </div>
+  </div>
+  <button id=draw>Draw</button>
+  <a id=save><button>Save image*</button></a>
+  <button id=reset>Reset</button>
+  <br><br>
+  <span id=note>* Saved image removes outer and inner grey circles, keeping only the spirograph drawing</span>
+  
+  <script type='text/javascript'>
+    let width = 400,
+      height = 400,
+      PR = window.devicePixelRatio || 1,
+      scaledWidth = width*PR,
+      scaledHeight = height*PR,
+      showCircles = true,
+      loopTime = 2000,
+      tickTime = 10,
+      R = 150, r = 52, l = 0.6,
+      p = l*r,
+      k = r/R,
+      t;
+      
+    let backContext = d3.select('canvas#circle')
+    .attrs({
+      width: scaledWidth,
+      height: scaledHeight,
+    })
+    .styles({
+      width: `${width}px`,
+      height: `${height}px`
+    })
+    .node().getContext("2d");
+      
+    let context = d3.select('canvas#spiro')
+    .attrs({
+      width: scaledWidth,
+      height: scaledHeight,
+    })
+    .styles({
+      width: `${width}px`,
+      height: `${height}px`
+    })
+    .node().getContext("2d");
 
-<canvas id="myCanvas" width="500" height="500"></canvas>
-<link rel=“stylesheet” href=“aka.css”>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="aka.js"></script>
+    let contextIMG = d3.select('canvas#image')
+    .attrs({
+      width: scaledWidth,
+      height: scaledHeight,
+    })
+    .styles({
+      width: `${width}px`,
+      height: `${height}px`
+    })
+    .node().getContext("2d");
 
-<FORM name="fm">
-  <INPUT type="number" name="A" value="5" style="width:100px;height:50px;font-size:2em;"> /
-  <INPUT type="number" name="B" value="2" style="width:100px;height:50px;font-size:2em;">
-  <INPUT type="button" value="Draw" onclick="Add()"style="width:200px;height:50px;font-size:2em;">   <input type="color" name="col" value="#000000">   <input type="checkbox" name="riyu" value="1" checked="checked">消す<br><br>
-  内角の和<INPUT type="number" name="C" value="" style="width:100px;height:30px;font-size:1em;">
+    backContext.scale(PR, PR);
+    context.scale(PR, PR);
+    contextIMG.scale(PR, PR);
+      
+    function pinPoint(angle){
+      return [
+      (R*( ((1-k)*(Math.cos(angle))) + (l*k*Math.cos(((1-k)/k)*angle)) )) + (width/2),
+      (R*( ((1-k)*(Math.sin(angle))) - (l*k*Math.sin(((1-k)/k)*angle)) )) + (height/2)
+      ]
+    }
 
+    let p0 = [(width/2)+(R-r)+p,height/2];
 
-</FORM>
+    backContext.strokeStyle = 'gray';
+    backContext.fillStyle = 'rgba(255, 255, 255, 0.2)';
 
+    context.strokeStyle = 'gold';
 
+    function initCircles(){
+
+      p = l*r;
+      k = r/R;
+      p0 = [(width/2)+(R-r)+p,height/2];
+      
+      backContext.clearRect(0, 0, width, height);
+
+      backContext.beginPath();
+      backContext.arc(width/2, height/2, R, 0, Math.PI * 2);
+      backContext.stroke();
+
+      backContext.beginPath();
+      backContext.arc((R-r)*Math.cos(0) + (width/2), (R-r)*Math.sin(0) + (height/2), Math.abs(r), 0, Math.PI * 2);
+      backContext.fill();
+
+      backContext.fillStyle = 'gold';
+      backContext.beginPath();
+      backContext.arc(...p0, 3, 0, Math.PI * 2);
+      backContext.fill();
+      
+      backContext.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    }
+
+    d3.select('#bigCircle').on('input', () => {
+      R = d3.select('#bigCircle').node().value;
+      initCircles();
+    });
+
+    d3.select('#smallCircle').on('input', () => {
+      r = d3.select('#smallCircle').node().value;
+      initCircles();
+    });
+
+    d3.select('#p').on('input', () => {
+      l = d3.select('#p').node().value;
+      initCircles();
+    });
+
+    d3.select('#loopTime').on('input', () => {
+      loopTime = d3.select('#loopTime').node().value;
+    });
+
+    d3.select('#showCircles').on('click', () => {
+      showCircles = d3.select('#showCircles').node().checked;
+      initCircles();
+      if(showCircles == false) backContext.clearRect(0, 0, width, height);  
+    });
+
+    initCircles();
+
+    d3.select('#draw').on('click', () => {
+      d3.selectAll('#draw, #showCircles, #sliders input').attr('disabled', 1);
+      t = d3.interval((e) => {
+        let a = (e/loopTime) * Math.PI * 2;
+        let xy = pinPoint(a);
+
+        if(showCircles == true){
+          backContext.clearRect(0, 0, width, height);
+
+          backContext.beginPath();
+          backContext.arc(width/2, height/2, R, 0, Math.PI * 2);
+          backContext.stroke();
+
+          backContext.beginPath();
+          backContext.arc((R-r)*Math.cos(a) + (width/2), (R-r)*Math.sin(a) + (height/2), Math.abs(r), 0, Math.PI * 2);
+          backContext.fill();
+
+          backContext.fillStyle = 'gold';
+          backContext.beginPath();
+          backContext.arc(...xy, 3, 0, Math.PI * 2);
+          backContext.fill();
+          
+          backContext.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        }
+
+        context.beginPath();
+        context.moveTo(...p0);
+        context.lineTo(...xy);
+        context.stroke();
+
+        p0 = xy;
+
+      },tickTime);
+    });
+
+    d3.select('#save').on('click', () => {
+      t.stop();
+      d3.select('#save button').attr('disabled', 1);
+      
+      contextIMG.fillStyle = 'black';
+      contextIMG.fillRect(0, 0, width, height);
+      contextIMG.drawImage(d3.select('#spiro').node(), 0, 0, width, height);
+      
+      let image = d3.select('#image').node().toDataURL();  
+      d3.select('#save').node().href = image;
+      d3.select('#save').node().download = "spiro.png";  
+    });
+
+    d3.select('#reset').on('click', () => {
+      if(typeof(t) == 'object') t.stop();
+      
+      showCircles = true;
+      R = 150; r = 52; l = 0.6;
+      p = l*r;
+      k = r/R;
+      loopTime = 2000;
+      
+      p0 = [(width/2)+(R-r)+p,height/2];
+      backContext.clearRect(0, 0, width, height);
+      context.clearRect(0, 0, width, height);
+      initCircles();
+      
+      d3.selectAll('#draw, #showCircles, #save button, #sliders input').attr('disabled', null);
+      showCircles = d3.select('#showCircles').node().checked = true;
+      d3.select('#bigCircle').node().value = 150;
+      d3.select('#smallCircle').node().value = 52;
+      d3.select('#p').node().value = 0.6;
+      d3.select('#loopTime').node().value = 2000;
+    });
+  </script>
+  
 </body>
+</html>
